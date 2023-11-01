@@ -71,7 +71,52 @@ def aggregator(request):
         msg = f'{ex}'
         return msg
 
-    data_list = [elm for elm in quiery]
-    print(data_list)
-    
-    return 'ok'
+    delta = dt_upto - dt_from
+    if group_type == "day":
+        labels = [(dt_from + timedelta(i)) for i in range(delta.days + 1)]
+    elif group_type == 'month':
+        current_date = dt_from
+        labels = []
+        while current_date <= dt_upto:
+            labels.append(current_date)
+            if current_date.month < 12:
+                current_date = datetime(
+                    year=current_date.year,
+                    month=current_date.month + 1,
+                    day=1
+                )
+            else:
+                current_date = datetime(
+                    year=current_date.year + 1,
+                    month=1,
+                    day=1
+                )
+    else:
+        current_date = dt_from
+        labels = []
+        while current_date <= dt_upto:
+            labels.append(current_date)
+            if current_date.hour < 23:
+                current_date = datetime(
+                    year=current_date.year,
+                    month=current_date.month,
+                    day=current_date.day,
+                    hour=current_date.hour + 1
+                )
+            else:
+                current_date = datetime(
+                    year=current_date.year,
+                    month=current_date.month,
+                    day=current_date.day + 1,
+                    hour=0
+                )
+    labels_iso = [date.isoformat() for date in labels]
+    dataset = [0] * len(labels)
+
+    i = 0
+    for elm in quiery:
+        while i < len(labels) and elm["_id"] != labels[i]:
+            i += 1
+        dataset[i] = elm["summary"]
+
+    return json.dumps({"dataset": dataset, "labels": labels_iso})
