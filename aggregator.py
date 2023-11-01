@@ -1,12 +1,22 @@
 import json
+import os
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
+from pymongoAPI import MongoDB
+
+load_dotenv()
 
 GROUP_TYPES = (
     'month',
     'day',
     'hour'
 )
+
+dbase = MongoDB(host=os.getenv('DB_HOST'),
+                port=int(os.getenv('DB_PORT')),
+                db_name=os.getenv('DB_NAME'),
+                collection=os.getenv('COLLECTION'))
 
 
 def format_data(request: str):
@@ -55,9 +65,13 @@ def aggregator(request):
     """
     try:
         dt_from, dt_upto, group_type = format_data(request)
+        quiery = dbase.get_aggregated(dt_from, dt_upto, group_type)
 
     except Exception as ex:
         msg = f'{ex}'
         return msg
 
-    return f'dt_from = {dt_from}, dt_upto = {dt_upto}, group_type = {group_type}'
+    data_list = [elm for elm in quiery]
+    print(data_list)
+    
+    return 'ok'
