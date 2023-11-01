@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 
+from aggregator import aggregator
+
 
 load_dotenv()
 
@@ -28,7 +30,7 @@ async def cmd_start(message: types.Message):
 
 @dp.message()
 async def aggregate_data(msg: types.Message):
-    result = msg.text
+    result = aggregator(msg.text)
     await bot.send_message(msg.from_user.id, result)
 
 
